@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { usePitchCoach } from './hooks/usePitchCoach';
 import {
-  NOTE_NAMES,
+  buildFiveNoteExercise,
   buildSessionSummary,
   centsBetween,
   frequencyToMidi,
@@ -11,7 +11,7 @@ import {
   midiToNote
 } from './lib/pitch-analysis.mjs';
 
-const EXERCISE = [60, 62, 64, 65, 67];
+const OCTAVES = [2, 3, 4, 5];
 
 const feedbackFor = (confidence, cents, active) => {
   if (!active) return { title: 'Ready when you are', detail: 'Hear the note, then start singing.', tone: 'idle' };
@@ -23,12 +23,14 @@ const feedbackFor = (confidence, cents, active) => {
 };
 
 export default function Home() {
+  const [octave, setOctave] = useState(4);
   const [targetMidi, setTargetMidi] = useState(60);
   const [step, setStep] = useState(0);
   const [frames, setFrames] = useState([]);
   const [summary, setSummary] = useState(null);
   const [tonePlaying, setTonePlaying] = useState(false);
   const { active, error, demo, pitch, confidence, rms, start, stop, playTone } = usePitchCoach();
+  const exercise = useMemo(() => buildFiveNoteExercise(octave), [octave]);
   const targetHz = midiToFrequency(targetMidi);
   const cents = pitch ? centsBetween(pitch, targetHz) : 0;
   const feedback = feedbackFor(confidence, cents, active);
@@ -54,7 +56,15 @@ export default function Home() {
   const selectStep = (index) => {
     if (active) stop();
     setStep(index);
-    setTargetMidi(EXERCISE[index]);
+    setTargetMidi(exercise[index]);
+    setFrames([]);
+    setSummary(null);
+  };
+
+  const selectOctave = (nextOctave) => {
+    if (active) stop();
+    setOctave(nextOctave);
+    setTargetMidi(buildFiveNoteExercise(nextOctave)[step]);
     setFrames([]);
     setSummary(null);
   };
@@ -71,7 +81,7 @@ export default function Home() {
 
       <header className="hero">
         <div><p className="eyebrow">PITCH PRACTICE · LESSON 1</p><h1>Find the center<br />of every note.</h1><p className="lede">Hear a target, sing it back, and get feedback you can trust—measured against the note you intended to sing.</p></div>
-        <div className="lesson-progress"><span>Five-note warm-up</span><strong>{step + 1} / {EXERCISE.length}</strong><div className="progress"><i style={{ width: `${((step + 1) / EXERCISE.length) * 100}%` }} /></div></div>
+        <div className="lesson-progress"><span>Five-note warm-up · Octave {octave}</span><strong>{step + 1} / {exercise.length}</strong><div className="progress"><i style={{ width: `${((step + 1) / exercise.length) * 100}%` }} /></div></div>
       </header>
 
       <section className="practice-shell">
@@ -80,7 +90,12 @@ export default function Home() {
           <div className="target-note">{midiToNote(targetMidi)}</div>
           <div className="target-hz">{targetHz.toFixed(1)} Hz</div>
           <button className="hear" onClick={hearTarget} disabled={tonePlaying}>{tonePlaying ? 'Playing…' : '▶  Hear target'}</button>
-          <div className="steps" aria-label="Exercise notes">{EXERCISE.map((midi, index) => <button key={midi} className={index === step ? 'active' : ''} onClick={() => selectStep(index)} aria-label={`Practice ${midiToNote(midi)}`}>{NOTE_NAMES[midi % 12]}</button>)}</div>
+          <div className="octave-picker" aria-label="Practice octave">
+            <span>Choose octave</span>
+            <div>{OCTAVES.map((value) => <button key={value} className={value === octave ? 'active' : ''} onClick={() => selectOctave(value)} aria-pressed={value === octave}>Oct {value}</button>)}</div>
+          </div>
+          <div className="steps" aria-label="Exercise notes">{exercise.map((midi, index) => <button key={midi} className={index === step ? 'active' : ''} onClick={() => selectStep(index)} aria-label={`Practice ${midiToNote(midi)}`}>{midiToNote(midi)}</button>)}</div>
+          <p className="range-help">Available range: C2–G5. Choose only notes that feel comfortable.</p>
         </div>
 
         <div className="tuner-panel">
@@ -101,7 +116,7 @@ export default function Home() {
 
       {summary && <section className="results" aria-label="Attempt results"><div><p className="label">ATTEMPT COMPLETE</p><h2>{summary.label}</h2><p>{summary.coaching}</p></div><div className="result-stat"><strong>{summary.medianAbsoluteCents == null ? '—' : `${summary.medianAbsoluteCents}¢`}</strong><span>median error</span></div><div className="result-stat"><strong>{summary.inTunePercent}%</strong><span>frames in tune</span></div><button className="primary" onClick={() => begin(demo)}>Try again</button></section>}
 
-      <footer><button disabled={step === 0} onClick={() => selectStep(step - 1)}>← Previous</button><p>Use a comfortable “ah” vowel. Stop if anything feels strained.</p><button disabled={step === EXERCISE.length - 1} onClick={() => selectStep(step + 1)}>Next note →</button></footer>
+      <footer><button disabled={step === 0} onClick={() => selectStep(step - 1)}>← Previous</button><p>Use a comfortable “ah” vowel. Stop if anything feels strained.</p><button disabled={step === exercise.length - 1} onClick={() => selectStep(step + 1)}>Next note →</button></footer>
     </main>
   );
 }
