@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+
+test('experience contains target, confidence, demo, and results states', async () => { const page = await readFile(new URL('../app/page.jsx', import.meta.url), 'utf8'); for (const text of ['TARGET NOTE', 'Signal ', 'Try demo', 'Finish attempt', 'median error', 'frames in tune']) assert.match(page, new RegExp(text)); });
+test('microphone capture requests unprocessed mono audio', async () => { const hook = await readFile(new URL('../app/hooks/usePitchCoach.js', import.meta.url), 'utf8'); for (const constraint of ['channelCount: 1', 'echoCancellation: false', 'noiseSuppression: false', 'autoGainControl: false']) assert.ok(hook.includes(constraint)); });
+test('unsupported coaching claims are removed from the live experience', async () => { const page = (await readFile(new URL('../app/page.jsx', import.meta.url), 'utf8')).toLowerCase(); for (const claim of ['pronunciation score', 'breathing score', 'confidence score', 'voice type']) assert.equal(page.includes(claim), false); });
+test('changing exercise notes ends the current attempt and demo follows the chosen target', async () => { const page = await readFile(new URL('../app/page.jsx', import.meta.url), 'utf8'); const hook = await readFile(new URL('../app/hooks/usePitchCoach.js', import.meta.url), 'utf8'); assert.ok(page.includes('if (active) stop()')); assert.ok(page.includes('}, targetHz)')); assert.ok(hook.includes('demoFrequency * Math.pow')); });
