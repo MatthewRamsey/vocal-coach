@@ -3,12 +3,12 @@ export const midiToFrequency = (midi, tuning = 440) => tuning * 2 ** ((midi - 69
 export const frequencyToMidi = (frequency, tuning = 440) => 69 + 12 * Math.log2(frequency / tuning);
 export const midiToNote = (midi) => `${NOTE_NAMES[((Math.round(midi) % 12) + 12) % 12]}${Math.floor(Math.round(midi) / 12) - 1}`;
 export const centsBetween = (frequency, target) => 1200 * Math.log2(frequency / target);
-export const FIVE_NOTE_INTERVALS = [0, 2, 4, 5, 7];
+export const NATURAL_NOTE_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
 
-export function buildFiveNoteExercise(octave) {
+export function buildNaturalNoteScale(octave) {
   if (!Number.isInteger(octave) || octave < 0 || octave > 8) throw new RangeError('Octave must be an integer from 0 to 8.');
   const rootMidi = (octave + 1) * 12;
-  return FIVE_NOTE_INTERVALS.map((interval) => rootMidi + interval);
+  return NATURAL_NOTE_INTERVALS.map((interval) => rootMidi + interval);
 }
 
 export function detectPitchYin(buffer, sampleRate, { minFrequency = 65, maxFrequency = 1050, threshold = 0.15 } = {}) {

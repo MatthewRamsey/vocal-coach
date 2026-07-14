@@ -1,4 +1,5 @@
 import './globals.css';
+import './scale-controls.css';
 
 export const metadata = {
   title: 'Vocal Coach — Pitch Practice',

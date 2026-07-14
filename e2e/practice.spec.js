@@ -21,16 +21,17 @@ test('learner can hear and move through target notes', async ({ page }) => {
   await expect(page.getByText('E4', { exact: true }).first()).toBeVisible();
 });
 
-test('learner can practice the same pattern across four octaves', async ({ page }) => {
+test('learner can practice all natural notes across four octaves', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('button', { name: 'Oct 4' })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Oct 2' }).click();
-  await expect(page.getByText('C2', { exact: true }).first()).toBeVisible();
-  await page.getByRole('button', { name: 'Practice G2' }).click();
-  await expect(page.getByText('G2', { exact: true }).first()).toBeVisible();
+  await expect(page.locator('.target-note')).toHaveText('C2');
+  await page.getByRole('button', { name: 'Practice B2' }).click();
+  await expect(page.locator('.target-note')).toHaveText('B2');
   await page.getByRole('button', { name: 'Oct 5' }).click();
-  await expect(page.getByText('G5', { exact: true }).first()).toBeVisible();
-  await expect(page.getByText('Available range: C2–G5')).toBeVisible();
+  await expect(page.locator('.target-note')).toHaveText('B5');
+  await expect(page.getByText('All natural notes, A through G · C2–B5')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Practice A5' })).toBeVisible();
 });
 
 test('layout remains usable on a phone', async ({ page }) => {

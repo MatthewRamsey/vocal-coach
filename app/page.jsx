@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { usePitchCoach } from './hooks/usePitchCoach';
 import {
-  buildFiveNoteExercise,
+  buildNaturalNoteScale,
   buildSessionSummary,
   centsBetween,
   frequencyToMidi,
@@ -30,7 +30,7 @@ export default function Home() {
   const [summary, setSummary] = useState(null);
   const [tonePlaying, setTonePlaying] = useState(false);
   const { active, error, demo, pitch, confidence, rms, start, stop, playTone } = usePitchCoach();
-  const exercise = useMemo(() => buildFiveNoteExercise(octave), [octave]);
+  const exercise = useMemo(() => buildNaturalNoteScale(octave), [octave]);
   const targetHz = midiToFrequency(targetMidi);
   const cents = pitch ? centsBetween(pitch, targetHz) : 0;
   const feedback = feedbackFor(confidence, cents, active);
@@ -64,7 +64,7 @@ export default function Home() {
   const selectOctave = (nextOctave) => {
     if (active) stop();
     setOctave(nextOctave);
-    setTargetMidi(buildFiveNoteExercise(nextOctave)[step]);
+    setTargetMidi(buildNaturalNoteScale(nextOctave)[step]);
     setFrames([]);
     setSummary(null);
   };
@@ -81,7 +81,7 @@ export default function Home() {
 
       <header className="hero">
         <div><p className="eyebrow">PITCH PRACTICE · LESSON 1</p><h1>Find the center<br />of every note.</h1><p className="lede">Hear a target, sing it back, and get feedback you can trust—measured against the note you intended to sing.</p></div>
-        <div className="lesson-progress"><span>Five-note warm-up · Octave {octave}</span><strong>{step + 1} / {exercise.length}</strong><div className="progress"><i style={{ width: `${((step + 1) / exercise.length) * 100}%` }} /></div></div>
+        <div className="lesson-progress"><span>Natural-note scale · Octave {octave}</span><strong>{step + 1} / {exercise.length}</strong><div className="progress"><i style={{ width: `${((step + 1) / exercise.length) * 100}%` }} /></div></div>
       </header>
 
       <section className="practice-shell">
@@ -95,7 +95,7 @@ export default function Home() {
             <div>{OCTAVES.map((value) => <button key={value} className={value === octave ? 'active' : ''} onClick={() => selectOctave(value)} aria-pressed={value === octave}>Oct {value}</button>)}</div>
           </div>
           <div className="steps" aria-label="Exercise notes">{exercise.map((midi, index) => <button key={midi} className={index === step ? 'active' : ''} onClick={() => selectStep(index)} aria-label={`Practice ${midiToNote(midi)}`}>{midiToNote(midi)}</button>)}</div>
-          <p className="range-help">Available range: C2–G5. Choose only notes that feel comfortable.</p>
+          <p className="range-help">All natural notes, A through G · C2–B5. Choose only notes that feel comfortable.</p>
         </div>
 
         <div className="tuner-panel">
